@@ -120,7 +120,6 @@ The results are compared using F1-score and balanced accuracy.
 DataScience_HotelBooking/
 |
 |-- data/
-|   `-- raw/
 |       `-- hotel_bookings.csv
 |
 |-- src/
@@ -131,6 +130,5 @@ DataScience_HotelBooking/
 |   |-- 04_kmeans_clustering.py
 |   `-- 05_open_source_model_comparison.py
 |
-|-- .gitignore
 `-- README.md
 ```
