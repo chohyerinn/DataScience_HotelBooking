@@ -48,10 +48,6 @@ As a stability check we retrained the same configuration on the full training se
 
 `06_practical_demo.py` is a small self-contained web app that loads the cleaned data, trains the selected final model on it, and exposes a form at `http://127.0.0.1:8502`. You can plug in lead time, ADR, hotel type, number of guests, etc. and get back a cancellation probability with a risk label (안정적 / 확인 권장 / 주의 필요).
 
-```bash
-python 06_practical_demo.py
-```
-
 Training takes about ten seconds on first launch, then the server stays up. Only Python's standard library + scikit-learn + pandas — no Flask, no Streamlit.
 
 Note: the term project spec explicitly excludes deployment ("must apply every step of the end-to-end Big Data process except data curation and deployment"). This demo is a self-learned bonus to make the model tangible during the presentation, not a deployment claim. It runs on localhost.
