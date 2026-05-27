@@ -4,23 +4,15 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DATA_CANDIDATES = [
-    PROJECT_ROOT / "data" / "hotel_bookings.csv",
-    PROJECT_ROOT / "data" / "raw" / "hotel_bookings.csv",
-]
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "raw" / "hotel_bookings.csv"
 LEAKAGE_COLUMNS = [
     "reservation_status",
     "reservation_status_date",
     "assigned_room_type",
 ]
 
-
 def load_raw_data():
-    for data_path in DATA_CANDIDATES:
-        if data_path.exists():
-            return pd.read_csv(data_path)
-    raise FileNotFoundError("hotel_bookings.csv was not found in the data directory.")
+    return pd.read_csv(DATA_PATH)
 
 
 def clean_booking_data(df):
@@ -45,7 +37,9 @@ def clean_booking_data(df):
     ).astype(int)
 
     cleaned_df = cleaned_df[
-        (cleaned_df["total_guests"] > 0) & (cleaned_df["adr"] >= 0)
+        (cleaned_df["total_guests"] > 0)
+        & (cleaned_df["total_stays"] > 0)
+        & (cleaned_df["adr"] >= 0)
     ].copy()
     return cleaned_df.drop(columns=LEAKAGE_COLUMNS)
 
