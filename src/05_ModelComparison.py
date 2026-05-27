@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
     results = compare_booking_models(X_train, y_train)
     selected = results.iloc[0]
-    holdout_results = evaluate_selected_model(
+    test_results = evaluate_selected_model(
         X_train, y_train, X_test, y_test, selected
     )
 
@@ -208,5 +208,5 @@ if __name__ == "__main__":
     print(results.head(5).round(4).to_string(index=False))
     print("\nFinal selected combination")
     print(selected[["scaling", "encoding", "model", "parameters"]].to_string())
-    print("\nFinal holdout test results")
-    print(holdout_results.round(4).to_string())
+    print("\nFinal test set results")
+    print(test_results.round(4).to_string())
