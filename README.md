@@ -114,6 +114,63 @@ The results are compared using F1-score and balanced accuracy.
 
 ---
 
+# How to Run the Project
+
+## Environment Setup
+
+Python 3.12 is recommended. From the project root directory, create and activate a virtual environment, then install the required libraries.
+
+```bash
+python -m venv .venv
+```
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+macOS or Linux:
+
+```bash
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+## Run the Analysis Notebook
+
+The notebook contains the complete analysis workflow and saved plots and model outputs.
+
+```bash
+jupyter lab notebook/Hotel_Booking_Cancellation_Project.ipynb
+```
+
+Run the notebook cells from top to bottom to reproduce the exploratory analysis, preprocessing summary, classification evaluation, K-means clustering analysis, and final model comparison.
+
+## Run the Source Code Files
+
+The individual Python modules can also be executed from the project root directory in the following order:
+
+```bash
+python src/01_DataExploration.py
+python src/02_DataPreprocessing.py
+python src/03_ClassificationModeling.py
+python src/04_KmeansClustering.py
+python src/05_ModelComparison.py
+```
+
+## Key Outputs
+
+* `src/01_DataExploration.py`: dataset statistics, missing values, cancellation distributions, and EDA plots.
+* `src/02_DataPreprocessing.py`: cleaning decisions and preprocessing summary.
+* `src/03_ClassificationModeling.py`: baseline classification cross-validation scores, confusion matrices, ROC curves, and feature importance.
+* `src/04_KmeansClustering.py`: selected cluster count, cluster summaries, and visualization plots.
+* `src/05_ModelComparison.py`: top five preprocessing/model combinations, selected model, and held-out test set scores.
+* `notebook/Hotel_Booking_Cancellation_Project.ipynb`: consolidated executable report containing outputs and plots.
+
+---
+
 # Project Structure
 
 ```text
@@ -134,6 +191,8 @@ DataScience_HotelBooking/
 |   `-- 05_ModelComparison.py
 |
 |-- library.md
+|
+|-- requirements.txt
 |
 `-- README.md
 ```
