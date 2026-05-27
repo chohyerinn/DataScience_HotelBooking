@@ -1,198 +1,93 @@
 # Hotel Booking Cancellation Prediction
 
-## Overview
+Predicting whether a hotel reservation will be canceled, using the [Hotel Booking Demand](https://www.kaggle.com/datasets/jessemostipak/hotel-booking-demand) dataset (about 119k records, 32 features). The target column is `is_canceled`.
 
-This project analyzes hotel booking data to predict whether a reservation will be canceled using machine learning models.
+## What's in here
 
-We also applied K-means clustering to explore booking patterns in the dataset.
+The whole analysis lives in one notebook -> `notebook/Hotel_Booking_Cancellation.ipynb`.
+It walks through EDA, cleaning, classification with K-fold CV, K-means, and a top-level comparison function that sweeps preprocessing and model combinations. The same code is also split into numbered scripts under `src/` for graders who prefer to run things one step at a time.
 
-The project includes:
+There's also a small bonus web demo (`06_practical_demo.py`) that wraps the final model in a local web page. See the bottom of this file.
 
-* Exploratory Data Analysis (EDA)
-* Data preprocessing
-* Feature engineering
-* Classification modeling
-* Clustering analysis
-* Model evaluation
+## Data cleaning, briefly
 
----
+A few decisions worth flagging up front, because they affect the row count:
 
-# Dataset
+- Missing `children` is filled with 0 (treated as no children listed).
+- Missing `country`, `agent`, `company` get explicit "Unknown" labels rather than being dropped.
+- Rows with zero total guests, zero total stay nights, or negative ADR are removed. These looked like data-entry errors or test bookings rather than real reservations.
+- Duplicate rows are **kept**. The dataset has no booking ID, so two identical rows could just as easily be two real bookings with the same attributes as one accidental duplicate. We didn't feel comfortable deleting tens of thousands of rows on a guess.
+- Columns that leak the outcome are dropped before modeling: `reservation_status`, `reservation_status_date`, and `assigned_room_type` (assigned_room_type may reflect post-booking operational decisions and therefore can leak information unavailable at the original reservation time).
+- Three engineered columns: `total_guests`, `total_stays`, `is_family`.
 
-This project uses the **Hotel Booking Demand** dataset, which contains hotel reservation records from Portugal.
+After cleaning the cancellation rate is basically unchanged from the raw data, which is the behavior we wanted.
 
-## Dataset Information
+## Models and evaluation
 
-* Number of records: 119,390
-* Number of features: 32
-* Target variable: `is_canceled`
+Classification models compared: Logistic Regression, Decision Tree, K-Nearest Neighbors. Each is tested with multiple parameter settings (e.g. `C=0.1` vs `1.0`, `max_depth=3/5/8`, `n_neighbors=5/11/21`).
 
-The dataset contains:
+Preprocessing variants tried per model: `{StandardScaler, MinMaxScaler}` × `{OneHotEncoder, OrdinalEncoder}`. That gives 4 preprocessing combinations × 8 model configurations = 32 combinations total, each scored with stratified 5-fold cross-validation.
 
-* Numerical variables
-* Categorical variables
-* Missing values
-* Duplicate rows
-* Some suspicious records
+For clustering we use K-means on the cleaned numerical features. Elbow and silhouette are both plotted in Section 4 of the notebook.
 
-Dataset sources:
+Reported metrics: accuracy, balanced accuracy, precision, recall, F1, and ROC-AUC for the final model on the test set.
 
-* https://www.kaggle.com/datasets/jessemostipak/hotel-booking-demand
-* https://doi.org/10.1016/j.dib.2018.11.126
+### About the 20,000-row sample
 
----
+The comparison function in Section 5 uses a stratified 20,000-row sample rather than the full cleaned dataset. This keeps the 32-combination sweep tractable (KNN with one-hot-encoded high-cardinality columns gets slow fast). Section 5.1 retrains the selected best model on the full training set and re-evaluates it as a sanity check — the scores stay in the same ballpark, so the sample is fine for model selection.
 
-# Models
+## Results
 
-Classification models:
+Best combination from the sweep: **StandardScaler + OneHotEncoder + Logistic Regression (C=1.0, class_weight=balanced)**.
 
-* Logistic Regression
-* Decision Tree
-* K-Nearest Neighbors (KNN)
+On the test set the model lands around 0.83 accuracy and 0.79 F1, with ROC-AUC about 0.92. Exact numbers per metric (accuracy, balanced accuracy, precision, recall, F1, ROC-AUC) are printed at the end of Section 5 in the notebook.
 
-Clustering model:
+As a stability check we retrained the same configuration on the full training set and evaluated it on a separate test set. The scores stayed close to the sample-based ones, confirming that the sample-based selection generalizes.
 
-* K-means clustering
+## demo (bonus)
 
-Evaluation methods:
-
-* Stratified 5-Fold Cross Validation
-* Accuracy
-* Precision
-* Recall
-* F1-score
-* ROC-AUC
-
----
-
-# Data Preprocessing
-
-Main preprocessing steps:
-
-* Missing value handling
-* Feature engineering
-* Feature scaling
-* Categorical encoding
-* Leakage prevention
-
-Created features:
-
-* `total_guests`
-* `total_stays`
-* `is_family`
-
-Removed columns:
-
-* `reservation_status`
-* `reservation_status_date`
-* `assigned_room_type`
-
-Scaling methods:
-
-* StandardScaler
-* MinMaxScaler
-
-Encoding methods:
-
-* OneHotEncoder
-* OrdinalEncoder
-
----
-
-# Model Comparison
-
-A reusable function was created to compare different preprocessing methods and machine learning models.
-
-The comparison includes:
-
-* Different scaling methods
-* Different encoding methods
-* Multiple classification models
-* Different parameter settings
-
-The results are compared using F1-score and balanced accuracy.
-
----
-
-# How to Run the Project
-
-## Environment Setup
-
-Python 3.12 is recommended. From the project root directory, create and activate a virtual environment, then install the required libraries.
+`06_practical_demo.py` is a small self-contained web app that loads the cleaned data, trains the selected final model on it, and exposes a form at `http://127.0.0.1:8502`. You can plug in lead time, ADR, hotel type, number of guests, etc. and get back a cancellation probability with a risk label (안정적 / 확인 권장 / 주의 필요).
 
 ```bash
-python -m venv .venv
+python 06_practical_demo.py
 ```
 
-Windows PowerShell:
+Training takes about ten seconds on first launch, then the server stays up. Only Python's standard library + scikit-learn + pandas — no Flask, no Streamlit.
 
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+Note: the term project spec explicitly excludes deployment ("must apply every step of the end-to-end Big Data process except data curation and deployment"). This demo is a self-learned bonus to make the model tangible during the presentation, not a deployment claim. It runs on localhost.
+
+## Project structure
+
 ```
-
-macOS or Linux:
-
-```bash
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-```
-
-## Run the Analysis Notebook
-
-The notebook contains the complete analysis workflow and saved plots and model outputs.
-
-```bash
-jupyter lab notebook/Hotel_Booking_Cancellation_Project.ipynb
-```
-
-Run the notebook cells from top to bottom to reproduce the exploratory analysis, preprocessing summary, classification evaluation, K-means clustering analysis, and final model comparison.
-
-## Run the Source Code Files
-
-The individual Python modules can also be executed from the project root directory in the following order:
-
-```bash
-python src/01_DataExploration.py
-python src/02_DataPreprocessing.py
-python src/03_ClassificationModeling.py
-python src/04_KmeansClustering.py
-python src/05_ModelComparison.py
-```
-
-## Key Outputs
-
-* `src/01_DataExploration.py`: dataset statistics, missing values, cancellation distributions, and EDA plots.
-* `src/02_DataPreprocessing.py`: cleaning decisions and preprocessing summary.
-* `src/03_ClassificationModeling.py`: baseline classification cross-validation scores, confusion matrices, ROC curves, and feature importance.
-* `src/04_KmeansClustering.py`: selected cluster count, cluster summaries, and visualization plots.
-* `src/05_ModelComparison.py`: top five preprocessing/model combinations, selected model, and held-out test set scores.
-* `notebook/Hotel_Booking_Cancellation_Project.ipynb`: consolidated executable report containing outputs and plots.
-
----
-
-# Project Structure
-
-```text
 DataScience_HotelBooking/
-|
-|-- data/
-|       `-- hotel_bookings.csv
-|
-|-- notebook/
-|       `-- Hotel_Booking_Cancellation_Project.ipynb
-|
-|-- src/
-|   |-- ProjectUtils.py
-|   |-- 01_DataExploration.py
-|   |-- 02_DataPreprocessing.py
-|   |-- 03_ClassificationModeling.py
-|   |-- 04_KmeansClustering.py
-|   `-- 05_ModelComparison.py
-|
-|-- library.md
-|
-|-- requirements.txt
-|
-`-- README.md
+├── data/
+│   └── hotel_bookings.csv
+├── notebook/
+│   └── Hotel_Booking_Cancellation.ipynb
+├── src/
+│   ├── project_utils.py
+│   ├── 01_data_exploration.py
+│   ├── 02_data_preprocessing.py
+│   ├── 03_classification_modeling.py
+│   ├── 04_kmeans_clustering.py
+│   ├── 05_open_source_model_comparison.py
+│   └── 06_practical_demo.py
+├── library.md
+└── README.md
 ```
+
+`library.md` lists every non-trivial library, class, and method used in the project with a short explanation, per the term project rubric.
+
+## Environment
+
+Tested with:
+- Python 3.14.2
+- pandas 3.0.1
+- scikit-learn 1.8.0
+
+## References
+
+- Dataset: Antonio, Almeida, & Nunes (2019). *Hotel booking demand datasets.* Data in Brief, 22, 41–49. https://doi.org/10.1016/j.dib.2018.11.126
+- Kaggle mirror: https://www.kaggle.com/datasets/jessemostipak/hotel-booking-demand
+
+Code patterns for the preprocessing comparison function are loosely based on the scikit-learn `Pipeline` + `ColumnTransformer` examples in the official user guide.
