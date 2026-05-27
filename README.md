@@ -81,8 +81,8 @@ Tested with:
 
 Code patterns for the preprocessing comparison function are loosely based on the scikit-learn `Pipeline` + `ColumnTransformer` examples in the official user guide.
 
-## demo (bonus)
+## Bonus demo
 
-`06_practical_demo.py` is a lightweight local demo that loads the cleaned dataset, trains the final model, and provides cancellation predictions through a localhost web interface (`127.0.0.1:8502`).
+`06_practical_demo.py` is a lightweight local demo that loads the cleaned dataset, trains the final model, and provides cancellation predictions through a localhost web interface
 
 This optional demo was created to make the prediction results easier to interpret during the presentation.
