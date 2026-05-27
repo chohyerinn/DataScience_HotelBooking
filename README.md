@@ -9,7 +9,7 @@ It walks through EDA, cleaning, classification with K-fold CV, K-means, and a to
 
 There's also a small bonus web demo (`06_practical_demo.py`) that wraps the final model in a local web page. See the bottom of this file.
 
-## Data cleaning, briefly
+## Data cleaning
 
 A few decisions worth flagging up front, because they affect the row count:
 
